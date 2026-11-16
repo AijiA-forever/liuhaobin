@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>报时鸟 · 桌面语音助手（原型）</title>
+<style>
+  :root{--orange:#ff8c42;--dark:#d96a1f;--cream:#fff4ec;--brown:#5a3a22;--ink:#3b3b3b;
+         --line:#ead2c2;--teal:#2ea98f;--gray:#9a9187}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#faf6f2;color:var(--ink)}
+  .top{background:var(--orange);color:#fff;display:flex;align-items:center;gap:18px;padding:12px 22px}
+  .top h1{font-size:18px;font-weight:700}
+  .top .sub{font-size:12px;opacity:.85}
+  .nav{margin-left:auto;display:flex;gap:8px}
+  .nav button{border:1px solid rgba(255,255,255,.6);background:transparent;color:#fff;padding:6px 14px;border-radius:999px;cursor:pointer;font-size:13px}
+  .nav button.on{background:#fff;color:var(--orange);font-weight:700}
+  .page{display:none;max-width:1120px;margin:18px auto;padding:0 16px}
+  .page.on{display:block}
+  .row{display:flex;gap:16px;align-items:flex-start}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .phead{padding:12px 16px;font-weight:700;color:var(--brown);border-bottom:1px solid #f0e6de;display:flex;align-items:center;gap:8px}
+  .chat{flex:1.4;height:560px;display:flex;flex-direction:column}
+  .msgs{flex:1;overflow-y:auto;padding:16px}
+  .msg{display:flex;margin:10px 0}
+  .msg.user{justify-content:flex-end}
+  .bub{max-width:72%;padding:10px 14px;border-radius:13px;line-height:1.55;font-size:14px;white-space:pre-wrap}
+  .user .bub{background:var(--orange);color:#fff}
+  .bot .bub{background:var(--cream);color:var(--brown);border:1px solid #f3dccb}
+  .tool{display:block;font-size:11px;color:var(--gray);margin-top:5px}
+  .foot{display:flex;gap:8px;padding:12px;border-top:1px solid #f0e6de}
+  .voice{border:1.5px solid var(--orange);color:var(--orange);background:#fff;border-radius:10px;padding:0 14px;font-weight:700;cursor:pointer}
+  input{flex:1;border:1px solid #e2d7ce;border-radius:10px;padding:10px 12px;font-size:14px;outline:none}
+  .send{background:var(--orange);color:#fff;border:0;border-radius:10px;padding:0 18px;font-weight:700;cursor:pointer}
+  .side{flex:1;height:560px;display:flex;flex-direction:column}
+  .card{margin:8px 12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fffdfb}
+  .card b{color:var(--brown);font-size:14px}
+  .card .t{font-size:12px;color:var(--gray);margin-top:3px}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;margin-left:6px}
+  .tag.orange{background:var(--cream);color:var(--orange)}
+  .tag.teal{background:#e5f5f0;color:var(--teal)}
+  .toast{position:fixed;top:74px;right:24px;background:var(--orange);color:#fff;border-radius:14px;padding:14px 18px;width:320px;display:none;box-shadow:0 6px 24px rgba(217,106,31,.35);z-index:9}
+  .toast .t{font-size:15px;font-weight:700;margin-bottom:8px}
+  .toast .acts{display:flex;gap:8px}
+  .toast button{flex:1;background:#fff;color:var(--orange);border:0;border-radius:8px;padding:6px 0;font-weight:700;cursor:pointer}
+  .tabbar{display:flex;gap:4px;padding:12px 16px 0}
+  .tabbar button{border:0;background:transparent;color:var(--gray);padding:8px 14px;cursor:pointer;font-size:14px;border-bottom:2px solid transparent}
+  .tabbar button.on{color:var(--orange);font-weight:700;border-color:var(--orange)}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #f0e6de}
+  th{background:var(--cream);color:var(--brown)}
+  .pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:999px}
+  .pill.on{background:#e5f5f0;color:var(--teal)}
+  .pill.off{background:#f3efe9;color:var(--gray)}
+  .hint{font-size:12px;color:var(--gray);padding:14px 16px;border-top:1px dashed var(--line);text-align:center}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>报时鸟 <span class="sub">DeskBird · 桌面语音助手（原型 v1.0）</span></h1>
+  <div class="nav">
+    <button class="on" onclick="show('front',this)">前台应用</button>
+    <button onclick="show('admin',this)">后台管理</button>
+  </div>
+</div>
+
+<!-- 前台 -->
+<div id="front" class="page on">
+  <div class="row">
+    <div class="panel chat">
+      <div class="phead">💬 聊天</div>
+      <div class="msgs" id="msgs">
+        <div class="msg user"><div class="bub">提醒我周五 22:00 交软工作业</div></div>
+        <div class="msg bot"><div class="bub">好的，已记下提醒：周五 22:00 交软工作业<span class="tool">工具: reminder_add ✓</span></div></div>
+        <div class="msg bot"><div class="bub">每天 21:00 我也会提醒你背单词<span class="tool">工具: reminder_add ✓（周期）</span></div></div>
+      </div>
+      <div class="foot">
+        <button class="voice" onclick="addMsg('我按住了说话…（语音识别中）')">🎤 按住说话</button>
+        <input id="text" placeholder="说一句你想让我记住的事…">
+        <button class="send" onclick="send()">发送</button>
+      </div>
+    </div>
+    <div class="panel side">
+      <div class="phead">📅 日程提醒 <button class="voice" style="margin-left:auto" onclick="toast()">模拟到点</button></div>
+      <div class="card"><b>周五 22:00 交软工作业</b><span class="tag orange">一次性</span><div class="t">来源：语音录入 · 未完成</div></div>
+      <div class="card"><b>每天 21:00 背单词</b><span class="tag teal">周期</span><div class="t">来源：文字录入 · 进行中</div></div>
+      <div class="card"><b>每 45 分钟 起来喝水</b><span class="tag teal">周期</span><div class="t">来源：设置页 · 进行中</div></div>
+      <div class="hint">原型说明：聊天窗支持文字与语音；日程面板展示未完成提醒，到点弹出提醒气泡。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 后台 -->
+<div id="admin" class="page">
+  <div class="tabbar">
+    <button class="on" onclick="tab('rem',this)">提醒管理</button>
+    <button onclick="tab('tool',this)">工具管理</button>
+    <button onclick="tab('dev',this)">设备管理</button>
+    <button onclick="tab('mem',this)">记忆管理</button>
+  </div>
+  <div class="panel" style="margin-top:12px" id="admin-body"></div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="t">🔔 周五 22:00 了，该交软工作业啦</div>
+  <div class="acts"><button onclick="closeToast()">已完成</button><button onclick="closeToast()">10 分钟后再提醒</button></div>
+</div>
+
+<script>
+function show(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.getElementById(id).classList.add('on');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+function tab(k,btn){document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');adminBody(k);}
+function addMsg(t,who){var d=document.createElement('div');d.className='msg '+(who||'bot');d.innerHTML='<div class="bub">'+t+'</div>';document.getElementById('msgs').appendChild(d);document.getElementById('msgs').scrollTop=1e5;}
+function send(){var v=document.getElementById('text').value.trim();if(!v)return;addMsg(v,'user');document.getElementById('text').value='';
+  setTimeout(function(){addMsg('已记下提醒：'+v+'<span class="tool">工具: reminder_add ✓</span>');},350);}
+function toast(){document.getElementById('toast').style.display='block';}
+function closeToast(){document.getElementById('toast').style.display='none';}
+function adminBody(k){
+  var b=document.getElementById('admin-body');var h='';
+  if(k==='rem')h='<table><tr><th>提醒内容</th><th>时间</th><th>类型</th><th>状态</th><th>操作</th></tr>'+
+    '<tr><td>周五 22:00 交软工作业</td><td>2026-11-20 22:00</td><td>一次性</td><td><span class="pill on">已触发</span></td><td>完成/删除</td></tr>'+
+    '<tr><td>每天 21:00 背单词</td><td>每天</td><td>周期</td><td><span class="pill off">进行中</span></td><td>暂停/删除</td></tr>'+
+    '<tr><td>每 45 分钟 起来喝水</td><td>间隔 45 分钟</td><td>周期</td><td><span class="pill off">进行中</span></td><td>暂停/删除</td></tr></table>';
+  else if(k==='tool')h='<table><tr><th>工具</th><th>能力</th><th>启用</th></tr>'+
+    '<tr><td>calculator</td><td>四则运算（ast 白名单，不用 eval）</td><td><span class="pill on">启用</span></td></tr>'+
+    '<tr><td>todo_*</td><td>待办增 / 查 / 完成</td><td><span class="pill on">启用</span></td></tr>'+
+    '<tr><td>file_*</td><td>workspace 沙箱内文件读写</td><td><span class="pill on">启用</span></td></tr>'+
+    '<tr><td>weather / time / 课表</td><td>天气、时间、课表查询</td><td><span class="pill on">启用</span></td></tr></table>';
+  else if(k==='dev')h='<table><tr><th>设备</th><th>名称</th><th>在线状态</th><th>最近心跳</th></tr>'+
+    '<tr><td>ESP32-A1</td><td>书桌音箱</td><td><span class="pill on">在线</span></td><td>刚刚</td></tr>'+
+    '<tr><td>ESP32-A2</td><td>宿舍音箱</td><td><span class="pill off">离线</span></td><td>2026-11-15 08:20</td></tr></table>';
+  else h='<table><tr><th>键</th><th>值</th><th>更新时间</th></tr>'+
+    '<tr><td>name</td><td>刘浩彬</td><td>2026-11-16</td></tr>'+
+    '<tr><td>常提醒</td><td>每天背单词</td><td>2026-11-16</td></tr></table>';
+  b.innerHTML=h;
+}
+adminBody('rem');
+</script>
+</body>
+</html>
