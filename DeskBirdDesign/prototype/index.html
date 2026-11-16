@@ -108,12 +108,21 @@
 </div>
 
 <script>
+var memName=null;
 function show(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.getElementById(id).classList.add('on');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
 function tab(k,btn){document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');adminBody(k);}
 function addMsg(t,who){var d=document.createElement('div');d.className='msg '+(who||'bot');d.innerHTML='<div class="bub">'+t+'</div>';document.getElementById('msgs').appendChild(d);document.getElementById('msgs').scrollTop=1e5;}
 function send(){var v=document.getElementById('text').value.trim();if(!v)return;addMsg(v,'user');document.getElementById('text').value='';
-  setTimeout(function(){addMsg('已记下提醒：'+v+'<span class="tool">工具: reminder_add ✓</span>');},350);}
+  setTimeout(function(){
+    var reply,tool='';
+    var m=v.match(/我叫\s*([^\s，,。！!]+)/);
+    if(m){memName=m[1];reply='记住了，你叫'+memName+'。';tool='工具: memory.remember ✓';}
+    else if(/我是谁|我叫什么|我的名字/.test(v)){reply=memName?('你叫'+memName+'。'):'你还没告诉我你的名字。';tool=memName?'工具: memory.recall ✓':'';}
+    else if(/提醒|记一下|待办|别忘了/.test(v)){reply='已记下提醒：'+v;tool='工具: reminder_add ✓';}
+    else{reply='好的，我已记下：'+v;tool='工具: todo_add ✓';}
+    addMsg(reply+(tool?'<span class="tool">'+tool+'</span>':''));
+  },350);}
 function toast(){document.getElementById('toast').style.display='block';}
 function closeToast(){document.getElementById('toast').style.display='none';}
 function adminBody(k){
