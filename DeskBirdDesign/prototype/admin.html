@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>报时鸟 · 后台管理（原型）</title>
+<style>
+  :root{--orange:#ff8c42;--dark:#d96a1f;--cream:#fff4ec;--brown:#5a3a22;--ink:#3b3b3b;--line:#ead2c2;--teal:#2ea98f;--gray:#9a9187;--bg:#faf6f2}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);display:flex;min-height:100vh}
+  .side{width:200px;background:#3b3229;color:#fff;padding:18px 12px;display:flex;flex-direction:column;gap:4px}
+  .logo{font-size:19px;font-weight:800;padding:4px 10px 14px}
+  .logo small{display:block;font-size:11px;font-weight:400;color:#b9ad9f}
+  .side button{display:flex;align-items:center;gap:8px;background:transparent;border:0;color:#d8cfc4;padding:11px 12px;border-radius:10px;cursor:pointer;font-size:14px;text-align:left}
+  .side button.on{background:var(--orange);color:#fff;font-weight:700}
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{height:52px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px}
+  .topbar b{font-size:15px;color:var(--brown)}
+  .view{display:none;flex:1;overflow:auto;padding:20px}
+  .view.on{display:block}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+  .stat .n{font-size:28px;font-weight:800;color:var(--orange)}
+  .stat .l{font-size:12px;color:var(--gray);margin-top:4px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  .card h3{color:var(--brown);font-size:15px;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:var(--cream);color:var(--brown);text-align:left;padding:9px 10px}
+  td{padding:9px 10px;border-bottom:1px solid #f0e6de}
+  .pill{font-size:11px;padding:3px 10px;border-radius:999px}
+  .pill.on{background:#e5f5f0;color:var(--teal)}
+  .pill.off{background:#f3efe9;color:var(--gray)}
+  .mini{background:#fff;border:1px solid var(--line);padding:5px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--brown)}
+  .mini.danger{color:#e05252;border-color:#f3c8c8}
+  .rule{background:var(--cream);border:1px dashed var(--orange);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--brown);line-height:1.7;margin-top:10px}
+  .rule b{color:var(--orange)}
+  input,select{border:1px solid #e2d7ce;border-radius:10px;padding:9px 12px;font-size:14px;outline:none;background:#fff}
+  .bar{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+  .btn{background:var(--orange);color:#fff;border:0;border-radius:10px;padding:9px 16px;font-weight:700;cursor:pointer}
+  .switch{position:relative;display:inline-block;width:38px;height:21px}
+  .switch input{opacity:0;width:0;height:0}
+  .sl{position:absolute;inset:0;background:#ddd;border-radius:999px;cursor:pointer}
+  .sl:before{content:"";position:absolute;height:15px;width:15px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked + .sl{background:var(--teal)}
+  .switch input:checked + .sl:before{transform:translateX(17px)}
+</style>
+</head>
+<body>
+<aside class="side">
+  <div class="logo">报时鸟<small>后台管理</small></div>
+  <button class="on" onclick="go('dash',this)">📊 仪表盘</button>
+  <button onclick="go('rem',this)">⏰ 提醒管理</button>
+  <button onclick="go('tool',this)">🧰 工具管理</button>
+  <button onclick="go('dev',this)">📟 设备管理</button>
+  <button onclick="go('mem',this)">🧠 记忆 / 日志</button>
+</aside>
+<div class="main">
+  <div class="topbar"><b id="title">仪表盘</b><a href="index.html" style="margin-left:auto;color:var(--orange);font-size:13px;text-decoration:none">返回前台 →</a></div>
+
+  <div class="view on" id="dash">
+    <div class="stats">
+      <div class="stat"><div class="n" id="s1">3</div><div class="l">总提醒数</div></div>
+      <div class="stat"><div class="n" id="s2">2</div><div class="l">进行中</div></div>
+      <div class="stat"><div class="n">9</div><div class="l">启用工具数</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">在线设备</div></div>
+    </div>
+    <div class="card"><h3>今日提醒概览</h3><table id="dash-tb"></table></div>
+  </div>
+
+  <div class="view" id="rem">
+    <div class="card">
+      <div class="bar">
+        <input id="q" placeholder="搜索提醒内容…" oninput="renderRem()">
+        <select id="f" onchange="renderRem()"><option value="all">全部状态</option><option value="pending">进行中</option><option value="done">已完成</option></select>
+      </div>
+      <table id="rem-tb"></table>
+      <div class="rule"><b>规则描述：</b>管理员可搜索、按状态筛选提醒；"完成"置为已完成，"删除"移除记录；周期提醒触发后自动排下一次时间。</div>
+    </div>
+  </div>
+
+  <div class="view" id="tool">
+    <div class="card">
+      <table id="tool-tb"></table>
+      <div class="rule"><b>规则描述：</b>工具开关控制该工具是否对用户可用；停用后对话中不再调用该工具，但已有数据保留。</div>
+    </div>
+  </div>
+
+  <div class="view" id="dev">
+    <div class="card">
+      <div class="bar"><input id="d-id" placeholder="设备编号，如 ESP32-01"><input id="d-name" placeholder="设备名称，如 书桌音箱"><button class="btn" onclick="addDev()">绑定设备</button></div>
+      <table id="dev-tb"></table>
+      <div class="rule"><b>规则描述：</b>绑定后的设备与桌面端共用同一份提醒数据；设备离线时降级为桌面端提醒。硬件连接见设计文档中的 ESP32 + 麦克风 + 音箱 + 按钮接线。</div>
+    </div>
+  </div>
+
+  <div class="view" id="mem">
+    <div class="card"><h3>长期记忆</h3><div id="mem-list"></div></div>
+    <div class="card"><h3>运行日志</h3><div id="log"></div></div>
+  </div>
+</div>
+
+<script>
+var db=JSON.parse(localStorage.getItem('deskbird_admin')||'{"reminders":[{"content":"周五 22:00 交软工作业","time":"一次性","status":"done"},{"content":"每天 21:00 背单词","time":"每天","status":"pending"},{"content":"每 45 分钟 起来喝水","time":"间隔 45 分钟","status":"pending"}],"tools":[{"name":"calculator","desc":"四则运算（ast 白名单）","on":true},{"name":"todo_*","desc":"待办增 / 查 / 完成","on":true},{"name":"file_*","desc":"workspace 沙箱文件读写","on":true},{"name":"weather","desc":"Open-Meteo 天气","on":true},{"name":"current_time","desc":"当前时间","on":true},{"name":"schedule_query","desc":"课表查询","on":true},{"name":"reminder_*","desc":"提醒增 / 查 / 完成","on":true},{"name":"memory_*","desc":"长期记忆读写","on":true},{"name":"voice_asr/tts","desc":"语音识别与合成","on":true}],"devices":[{"id":"ESP32-A1","name":"书桌音箱","online":true},{"id":"ESP32-A2","name":"宿舍音箱","online":false}],"facts":{"name":"刘浩彬","常提醒":"每天背单词"},"logs":[]}');
+function save(){localStorage.setItem('deskbird_admin',JSON.stringify(db));}
+function log(s){db.logs.unshift(new Date().toLocaleTimeString('zh-CN')+' · '+s);db.logs=db.logs.slice(0,20);save();renderLog();}
+function go(id,btn){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById(id).classList.add('on');document.querySelectorAll('.side button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('title').textContent=btn.textContent.trim().slice(2);}
+function renderDash(){document.getElementById('s1').textContent=db.reminders.length;document.getElementById('s2').textContent=db.reminders.filter(r=>r.status==='pending').length;
+  var h='';db.reminders.forEach(function(r){h+='<tr><td>'+r.content+'</td><td>'+r.time+'</td><td>'+(r.status==='done'?'<span class="pill on">已完成</span>':'<span class="pill off">进行中</span>')+'</td></tr>';});
+  document.getElementById('dash-tb').innerHTML='<tr><th>内容</th><th>类型</th><th>状态</th></tr>'+h;}
+function renderRem(){var q=document.getElementById('q').value.trim();var f=document.getElementById('f').value;
+  var h='';db.reminders.forEach(function(r,i){
+    if(q&&r.content.indexOf(q)<0)return;if(f!=='all'&&r.status!==f)return;
+    h+='<tr><td>'+r.content+'</td><td>'+r.time+'</td><td>'+(r.status==='done'?'<span class="pill on">已完成</span>':'<span class="pill off">进行中</span>')+'</td>'+
+       '<td><button class="mini" onclick="toggleRem('+i+')">'+(r.status==='done'?'恢复':'完成')+'</button> <button class="mini danger" onclick="delRem('+i+')">删除</button></td></tr>';});
+  document.getElementById('rem-tb').innerHTML='<tr><th>内容</th><th>类型</th><th>状态</th><th>操作</th></tr>'+(h||'<tr><td colspan="4" style="color:var(--gray)">无匹配提醒</td></tr>');}
+function toggleRem(i){db.reminders[i].status=db.reminders[i].status==='done'?'pending':'done';save();renderRem();renderDash();log('提醒状态变更：'+db.reminders[i].content);}
+function delRem(i){db.reminders.splice(i,1);save();renderRem();renderDash();log('删除提醒');}
+function renderTool(){var h='';db.tools.forEach(function(t,i){h+='<tr><td>'+t.name+'</td><td>'+t.desc+'</td><td><span class="pill '+(t.on?'on':'off')+'">'+(t.on?'启用':'停用')+'</span></td>'+
+  '<td><label class="switch"><input type="checkbox" '+(t.on?'checked':'')+' onchange="toggleTool('+i+')"><span class="sl"></span></label></td></tr>';});
+  document.getElementById('tool-tb').innerHTML='<tr><th>工具</th><th>能力</th><th>状态</th><th>开关</th></tr>'+h;}
+function toggleTool(i){db.tools[i].on=!db.tools[i].on;save();renderTool();log('工具 '+(db.tools[i].on?'启用':'停用')+'：'+db.tools[i].name);}
+function renderDev(){var h='';db.devices.forEach(function(d){h+='<tr><td>'+d.id+'</td><td>'+d.name+'</td><td><span class="pill '+(d.online?'on':'off')+'">'+(d.online?'在线':'离线')+'</span></td></tr>';});
+  document.getElementById('dev-tb').innerHTML='<tr><th>设备编号</th><th>名称</th><th>状态</th></tr>'+h;}
+function addDev(){var id=document.getElementById('d-id').value.trim();var nm=document.getElementById('d-name').value.trim();
+  if(!id||!nm){alert('请填写设备编号和名称');return;}db.devices.push({id:id,name:nm,online:false});save();renderDev();log('绑定设备 '+id);document.getElementById('d-id').value='';document.getElementById('d-name').value='';}
+function renderMem(){var b=document.getElementById('mem-list');b.innerHTML='';Object.keys(db.facts).forEach(function(k){
+  var d=document.createElement('div');d.style.cssText='display:flex;gap:10px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px';
+  d.innerHTML='<div style="flex:1"><b style="color:var(--brown)">'+k+'</b><div style="font-size:12px;color:var(--gray)">'+db.facts[k]+'</div></div><button class="mini danger" onclick="delFact(\''+k+'\')">删除</button>';
+  b.appendChild(d);});}
+function delFact(k){delete db.facts[k];save();renderMem();log('删除记忆：'+k);}
+function renderLog(){document.getElementById('log').innerHTML=db.logs.length?db.logs.map(x=>'<div style="padding:5px 0;border-bottom:1px solid #f0e6de;font-size:12px;color:var(--gray)">'+x+'</div>').join(''):'<div style="color:var(--gray);font-size:12px">暂无日志</div>';}
+renderDash();renderRem();renderTool();renderDev();renderMem();renderLog();
+</script>
+</body>
+</html>

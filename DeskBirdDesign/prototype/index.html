@@ -3,148 +3,227 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>报时鸟 · 桌面语音助手（原型）</title>
+<title>报时鸟 · 前台应用（原型）</title>
 <style>
-  :root{--orange:#ff8c42;--dark:#d96a1f;--cream:#fff4ec;--brown:#5a3a22;--ink:#3b3b3b;
-         --line:#ead2c2;--teal:#2ea98f;--gray:#9a9187}
+  :root{--orange:#ff8c42;--dark:#d96a1f;--cream:#fff4ec;--brown:#5a3a22;--ink:#3b3b3b;--line:#ead2c2;--teal:#2ea98f;--gray:#9a9187;--bg:#faf6f2}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#faf6f2;color:var(--ink)}
-  .top{background:var(--orange);color:#fff;display:flex;align-items:center;gap:18px;padding:12px 22px}
-  .top h1{font-size:18px;font-weight:700}
-  .top .sub{font-size:12px;opacity:.85}
-  .nav{margin-left:auto;display:flex;gap:8px}
-  .nav button{border:1px solid rgba(255,255,255,.6);background:transparent;color:#fff;padding:6px 14px;border-radius:999px;cursor:pointer;font-size:13px}
-  .nav button.on{background:#fff;color:var(--orange);font-weight:700}
-  .page{display:none;max-width:1120px;margin:18px auto;padding:0 16px}
-  .page.on{display:block}
-  .row{display:flex;gap:16px;align-items:flex-start}
-  .panel{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.04)}
-  .phead{padding:12px 16px;font-weight:700;color:var(--brown);border-bottom:1px solid #f0e6de;display:flex;align-items:center;gap:8px}
-  .chat{flex:1.4;height:560px;display:flex;flex-direction:column}
-  .msgs{flex:1;overflow-y:auto;padding:16px}
-  .msg{display:flex;margin:10px 0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);height:100vh;display:flex}
+  .side{width:200px;background:linear-gradient(180deg,#ff8c42,#e87b2e);color:#fff;padding:18px 12px;display:flex;flex-direction:column;gap:4px}
+  .logo{font-size:20px;font-weight:800;padding:4px 10px 14px}
+  .logo small{display:block;font-size:11px;font-weight:400;opacity:.85}
+  .side button{display:flex;align-items:center;gap:8px;background:transparent;border:0;color:#fff;padding:11px 12px;border-radius:10px;cursor:pointer;font-size:14px;text-align:left}
+  .side button.on{background:#fff;color:var(--orange);font-weight:700}
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{height:52px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px;gap:12px}
+  .topbar b{font-size:15px;color:var(--brown)}
+  .mode{margin-left:auto;font-size:12px;padding:4px 10px;border-radius:999px;background:var(--cream);color:var(--orange)}
+  .view{display:none;flex:1;overflow:auto;padding:20px}
+  .view.on{display:block}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  .card h3{color:var(--brown);font-size:15px;margin-bottom:10px}
+  .rule{background:var(--cream);border:1px dashed var(--orange);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--brown);line-height:1.7}
+  .rule b{color:var(--orange)}
+  .chat{display:flex;flex-direction:column;height:calc(100vh - 132px)}
+  .msgs{flex:1;overflow-y:auto;padding:14px 4px}
+  .msg{display:flex;margin:9px 0}
   .msg.user{justify-content:flex-end}
-  .bub{max-width:72%;padding:10px 14px;border-radius:13px;line-height:1.55;font-size:14px;white-space:pre-wrap}
+  .bub{max-width:70%;padding:10px 14px;border-radius:13px;line-height:1.55;font-size:14px;white-space:pre-wrap}
   .user .bub{background:var(--orange);color:#fff}
   .bot .bub{background:var(--cream);color:var(--brown);border:1px solid #f3dccb}
   .tool{display:block;font-size:11px;color:var(--gray);margin-top:5px}
-  .foot{display:flex;gap:8px;padding:12px;border-top:1px solid #f0e6de}
-  .voice{border:1.5px solid var(--orange);color:var(--orange);background:#fff;border-radius:10px;padding:0 14px;font-weight:700;cursor:pointer}
-  input{flex:1;border:1px solid #e2d7ce;border-radius:10px;padding:10px 12px;font-size:14px;outline:none}
-  .send{background:var(--orange);color:#fff;border:0;border-radius:10px;padding:0 18px;font-weight:700;cursor:pointer}
-  .side{flex:1;height:560px;display:flex;flex-direction:column}
-  .card{margin:8px 12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fffdfb}
-  .card b{color:var(--brown);font-size:14px}
-  .card .t{font-size:12px;color:var(--gray);margin-top:3px}
-  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;margin-left:6px}
+  .foot{display:flex;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+  .voice{border:1.5px solid var(--orange);color:var(--orange);background:#fff;border-radius:10px;padding:0 14px;font-weight:700;cursor:pointer;white-space:nowrap}
+  input,select{flex:1;border:1px solid #e2d7ce;border-radius:10px;padding:10px 12px;font-size:14px;outline:none;background:#fff}
+  .send{background:var(--orange);color:#fff;border:0;border-radius:10px;padding:0 20px;font-weight:700;cursor:pointer}
+  .list-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#fffdfb}
+  .list-item .grow{flex:1}
+  .list-item .t{font-size:14px;color:var(--brown);font-weight:700}
+  .list-item .s{font-size:12px;color:var(--gray);margin-top:2px}
+  .list-item.done .t{text-decoration:line-through;color:var(--gray)}
+  .tag{font-size:11px;padding:2px 8px;border-radius:999px}
   .tag.orange{background:var(--cream);color:var(--orange)}
   .tag.teal{background:#e5f5f0;color:var(--teal)}
-  .toast{position:fixed;top:74px;right:24px;background:var(--orange);color:#fff;border-radius:14px;padding:14px 18px;width:320px;display:none;box-shadow:0 6px 24px rgba(217,106,31,.35);z-index:9}
+  .mini{background:#fff;border:1px solid var(--line);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--brown)}
+  .mini.danger{color:#e05252;border-color:#f3c8c8}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .form label{display:block;font-size:12px;color:var(--gray);margin:8px 0 4px}
+  .form .row{display:flex;gap:8px}
+  .form .row label{flex:1;display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:8px;padding:8px;cursor:pointer;font-size:13px;color:var(--brown)}
+  .form .row label.on{border-color:var(--orange);background:var(--cream)}
+  .btn{background:var(--orange);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:700;cursor:pointer;margin-top:10px}
+  .switch{position:relative;display:inline-block;width:40px;height:22px}
+  .switch input{opacity:0;width:0;height:0}
+  .sl{position:absolute;inset:0;background:#ddd;border-radius:999px;cursor:pointer;transition:.2s}
+  .sl:before{content:"";position:absolute;height:16px;width:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked + .sl{background:var(--orange)}
+  .switch input:checked + .sl:before{transform:translateX(18px)}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);display:none;align-items:center;justify-content:center;z-index:20}
+  .overlay.on{display:flex}
+  .modal{background:#fff;border-radius:16px;width:420px;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+  .toast{position:fixed;top:68px;right:22px;background:var(--orange);color:#fff;border-radius:14px;padding:14px 18px;width:320px;display:none;box-shadow:0 6px 24px rgba(217,106,31,.35);z-index:30}
+  .toast.on{display:block}
   .toast .t{font-size:15px;font-weight:700;margin-bottom:8px}
   .toast .acts{display:flex;gap:8px}
   .toast button{flex:1;background:#fff;color:var(--orange);border:0;border-radius:8px;padding:6px 0;font-weight:700;cursor:pointer}
-  .tabbar{display:flex;gap:4px;padding:12px 16px 0}
-  .tabbar button{border:0;background:transparent;color:var(--gray);padding:8px 14px;cursor:pointer;font-size:14px;border-bottom:2px solid transparent}
-  .tabbar button.on{color:var(--orange);font-weight:700;border-color:var(--orange)}
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #f0e6de}
-  th{background:var(--cream);color:var(--brown)}
-  .pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:999px}
-  .pill.on{background:#e5f5f0;color:var(--teal)}
-  .pill.off{background:#f3efe9;color:var(--gray)}
-  .hint{font-size:12px;color:var(--gray);padding:14px 16px;border-top:1px dashed var(--line);text-align:center}
 </style>
 </head>
 <body>
-<div class="top">
-  <h1>报时鸟 <span class="sub">DeskBird · 桌面语音助手（原型 v1.0）</span></h1>
-  <div class="nav">
-    <button class="on" onclick="show('front',this)">前台应用</button>
-    <button onclick="show('admin',this)">后台管理</button>
-  </div>
-</div>
+<aside class="side">
+  <div class="logo">报时鸟<small>DeskBird 前台应用</small></div>
+  <button class="on" onclick="go('chat',this)">💬 对话</button>
+  <button onclick="go('schedule',this)">📅 日程</button>
+  <button onclick="go('timetable',this)">📚 课表</button>
+  <button onclick="go('settings',this)">⚙️ 设置</button>
+</aside>
+<div class="main">
+  <div class="topbar"><b id="title">对话</b><span class="mode" id="mode">模式：在线</span></div>
 
-<!-- 前台 -->
-<div id="front" class="page on">
-  <div class="row">
-    <div class="panel chat">
-      <div class="phead">💬 聊天</div>
+  <div class="view on" id="chat">
+    <div class="card chat">
       <div class="msgs" id="msgs">
-        <div class="msg user"><div class="bub">提醒我周五 22:00 交软工作业</div></div>
-        <div class="msg bot"><div class="bub">好的，已记下提醒：周五 22:00 交软工作业<span class="tool">工具: reminder_add ✓</span></div></div>
-        <div class="msg bot"><div class="bub">每天 21:00 我也会提醒你背单词<span class="tool">工具: reminder_add ✓（周期）</span></div></div>
+        <div class="msg bot"><div class="bub">你好，我是报时鸟。你可以：<br>· "提醒我周五 22:00 交软工作业"<br>· "我叫刘浩彬，请你记住"<br>· "我是谁" "现在几点" "帮我算一下 (3+5)*2"</div></div>
       </div>
       <div class="foot">
-        <button class="voice" onclick="addMsg('我按住了说话…（语音识别中）')">🎤 按住说话</button>
-        <input id="text" placeholder="说一句你想让我记住的事…">
+        <button class="voice" onclick="sayVoice()">🎤 按住说话</button>
+        <input id="text" placeholder="说一句你想让我做的事…" onkeydown="if(event.key==='Enter')send()">
         <button class="send" onclick="send()">发送</button>
       </div>
     </div>
-    <div class="panel side">
-      <div class="phead">📅 日程提醒 <button class="voice" style="margin-left:auto" onclick="toast()">模拟到点</button></div>
-      <div class="card"><b>周五 22:00 交软工作业</b><span class="tag orange">一次性</span><div class="t">来源：语音录入 · 未完成</div></div>
-      <div class="card"><b>每天 21:00 背单词</b><span class="tag teal">周期</span><div class="t">来源：文字录入 · 进行中</div></div>
-      <div class="card"><b>每 45 分钟 起来喝水</b><span class="tag teal">周期</span><div class="t">来源：设置页 · 进行中</div></div>
-      <div class="hint">原型说明：聊天窗支持文字与语音；日程面板展示未完成提醒，到点弹出提醒气泡。</div>
+    <div class="rule"><b>规则描述：</b>对话支持文字与语音。系统先识别意图——"我叫X"写入记忆；"我是谁"读记忆；"提醒我/记一下"写入日程；"现在几点/算一下/查课表/天气"调用工具。语音识别失败自动降级为文字；每次调用工具在气泡下方显示"工具: xxx ✓"。</div>
+  </div>
+
+  <div class="view" id="schedule">
+    <div class="card">
+      <h3>我的日程提醒 <button class="mini" style="float:right" onclick="openForm()">＋ 新增提醒</button></h3>
+      <div id="schedule-list"></div>
+      <div class="rule" style="margin-top:10px"><b>规则描述：</b>提醒分"一次性 / 每天 / 间隔 N 分钟"。到点弹窗提供"已完成 / 10 分钟后再提醒"；周期提醒触发后自动排下一次；已完成提醒置灰保留记录。</div>
+    </div>
+  </div>
+
+  <div class="view" id="timetable">
+    <div class="card"><h3>本周课表</h3><div id="tt"></div>
+      <div class="rule" style="margin-top:10px"><b>规则描述：</b>课表按"周几 + 节次"展示；对话中说"明天什么课 / 查课表"返回对应课程。课表数据由后台维护。</div></div>
+  </div>
+
+  <div class="view" id="settings">
+    <div class="grid2">
+      <div class="card">
+        <h3>提醒与语音</h3>
+        <div class="form">
+          <label>音色</label>
+          <select id="voice-tone"><option>温柔女声</option><option>沉稳男声</option><option>系统默认</option></select>
+          <label>提醒渠道</label>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+            <label><input type="checkbox" checked> 桌面弹窗</label>
+            <label><input type="checkbox" checked> 语音播报</label>
+            <label><input type="checkbox"> 硬件音箱</label>
+          </div>
+          <label>大模型开关</label>
+          <label class="switch"><input type="checkbox" checked id="llm"><span class="sl"></span></label>
+          <button class="btn" onclick="saveSettings()">保存设置</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>长期记忆</h3>
+        <div id="mem-list"></div>
+        <div class="rule" style="margin-top:10px"><b>规则描述：</b>长期记忆存称呼、常用提醒等事实，重启不丢；可在此删除某条记忆。</div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- 后台 -->
-<div id="admin" class="page">
-  <div class="tabbar">
-    <button class="on" onclick="tab('rem',this)">提醒管理</button>
-    <button onclick="tab('tool',this)">工具管理</button>
-    <button onclick="tab('dev',this)">设备管理</button>
-    <button onclick="tab('mem',this)">记忆管理</button>
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <h3 style="color:var(--brown);margin-bottom:12px">新增提醒</h3>
+    <div class="form">
+      <label>内容（必填）</label>
+      <input id="r-content" placeholder="例如：交软工作业">
+      <label>时间</label>
+      <input id="r-time" type="datetime-local">
+      <label>重复类型</label>
+      <div class="row" id="repeat-group">
+        <label class="on" onclick="setRepeat(this,'once')"><input type="radio" name="rep" checked>一次性</label>
+        <label onclick="setRepeat(this,'daily')"><input type="radio" name="rep">每天</label>
+        <label onclick="setRepeat(this,'interval')"><input type="radio" name="rep">间隔</label>
+      </div>
+      <label id="interval-label" style="display:none">间隔分钟数</label>
+      <input id="r-interval" type="number" placeholder="45" style="display:none">
+      <button class="btn" onclick="saveReminder()">保存</button>
+      <button class="mini danger" style="float:right;margin-top:14px" onclick="closeForm()">取消</button>
+    </div>
   </div>
-  <div class="panel" style="margin-top:12px" id="admin-body"></div>
 </div>
 
 <div class="toast" id="toast">
-  <div class="t">🔔 周五 22:00 了，该交软工作业啦</div>
-  <div class="acts"><button onclick="closeToast()">已完成</button><button onclick="closeToast()">10 分钟后再提醒</button></div>
+  <div class="t">🔔 <span id="toast-text">周五 22:00 了，该交软工作业啦</span></div>
+  <div class="acts"><button onclick="toast(false)">已完成</button><button onclick="toast(false)">10 分钟后再提醒</button></div>
 </div>
 
 <script>
-var memName=null;
-function show(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.getElementById(id).classList.add('on');
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
-function tab(k,btn){document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');adminBody(k);}
-function addMsg(t,who){var d=document.createElement('div');d.className='msg '+(who||'bot');d.innerHTML='<div class="bub">'+t+'</div>';document.getElementById('msgs').appendChild(d);document.getElementById('msgs').scrollTop=1e5;}
-function send(){var v=document.getElementById('text').value.trim();if(!v)return;addMsg(v,'user');document.getElementById('text').value='';
+var store=JSON.parse(localStorage.getItem('deskbird')||'{"name":"","reminders":[],"facts":{"name":""},"tone":"温柔女声"}');
+function save(){localStorage.setItem('deskbird',JSON.stringify(store));}
+function go(id,btn){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById(id).classList.add('on');document.querySelectorAll('.side button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('title').textContent=btn.textContent.trim().slice(2);}
+function addMsg(t,who,tool){var d=document.createElement('div');d.className='msg '+(who||'bot');d.innerHTML='<div class="bub">'+t+(tool?'<span class="tool">'+tool+'</span>':'')+'</div>';document.getElementById('msgs').appendChild(d);document.getElementById('msgs').scrollTop=1e6;}
+function sayVoice(){addMsg('（按住说话，正在识别…）','user');setTimeout(function(){addMsg('语音识别成功，已转为文字输入。','bot');},500);}
+function calc(s){s=s.replace(/[^0-9+\-*/().]/g,'');if(!/^[0-9+\-*/().]+$/.test(s)||!/[0-9]/.test(s))return null;try{var r=new Function('return '+s)();return isFinite(r)?r:null;}catch(e){return null;}}
+function send(){
+  var v=document.getElementById('text').value.trim();if(!v)return;
+  addMsg(v,'user');document.getElementById('text').value='';
   setTimeout(function(){
-    var reply,tool='';
     var m=v.match(/我叫\s*([^\s，,。！!]+)/);
-    if(m){memName=m[1];reply='记住了，你叫'+memName+'。';tool='工具: memory.remember ✓';}
-    else if(/我是谁|我叫什么|我的名字/.test(v)){reply=memName?('你叫'+memName+'。'):'你还没告诉我你的名字。';tool=memName?'工具: memory.recall ✓':'';}
-    else if(/提醒|记一下|待办|别忘了/.test(v)){reply='已记下提醒：'+v;tool='工具: reminder_add ✓';}
-    else{reply='好的，我已记下：'+v;tool='工具: todo_add ✓';}
-    addMsg(reply+(tool?'<span class="tool">'+tool+'</span>':''));
-  },350);}
-function toast(){document.getElementById('toast').style.display='block';}
-function closeToast(){document.getElementById('toast').style.display='none';}
-function adminBody(k){
-  var b=document.getElementById('admin-body');var h='';
-  if(k==='rem')h='<table><tr><th>提醒内容</th><th>时间</th><th>类型</th><th>状态</th><th>操作</th></tr>'+
-    '<tr><td>周五 22:00 交软工作业</td><td>2026-11-20 22:00</td><td>一次性</td><td><span class="pill on">已触发</span></td><td>完成/删除</td></tr>'+
-    '<tr><td>每天 21:00 背单词</td><td>每天</td><td>周期</td><td><span class="pill off">进行中</span></td><td>暂停/删除</td></tr>'+
-    '<tr><td>每 45 分钟 起来喝水</td><td>间隔 45 分钟</td><td>周期</td><td><span class="pill off">进行中</span></td><td>暂停/删除</td></tr></table>';
-  else if(k==='tool')h='<table><tr><th>工具</th><th>能力</th><th>启用</th></tr>'+
-    '<tr><td>calculator</td><td>四则运算（ast 白名单，不用 eval）</td><td><span class="pill on">启用</span></td></tr>'+
-    '<tr><td>todo_*</td><td>待办增 / 查 / 完成</td><td><span class="pill on">启用</span></td></tr>'+
-    '<tr><td>file_*</td><td>workspace 沙箱内文件读写</td><td><span class="pill on">启用</span></td></tr>'+
-    '<tr><td>weather / time / 课表</td><td>天气、时间、课表查询</td><td><span class="pill on">启用</span></td></tr></table>';
-  else if(k==='dev')h='<table><tr><th>设备</th><th>名称</th><th>在线状态</th><th>最近心跳</th></tr>'+
-    '<tr><td>ESP32-A1</td><td>书桌音箱</td><td><span class="pill on">在线</span></td><td>刚刚</td></tr>'+
-    '<tr><td>ESP32-A2</td><td>宿舍音箱</td><td><span class="pill off">离线</span></td><td>2026-11-15 08:20</td></tr></table>';
-  else h='<table><tr><th>键</th><th>值</th><th>更新时间</th></tr>'+
-    '<tr><td>name</td><td>刘浩彬</td><td>2026-11-16</td></tr>'+
-    '<tr><td>常提醒</td><td>每天背单词</td><td>2026-11-16</td></tr></table>';
-  b.innerHTML=h;
+    if(m){store.name=m[1];store.facts.name=m[1];save();addMsg('记住了，你叫'+m[1]+'。','bot','工具: memory.remember ✓');renderMem();return;}
+    if(/我是谁|我叫什么|我的名字/.test(v)){addMsg(store.name?('你叫'+store.name+'。'):'你还没告诉我你的名字。','bot',store.name?'工具: memory.recall ✓':'');return;}
+    if(/提醒|别忘了|记得/.test(v)){addReminder({content:v.replace(/^(提醒我|请提醒我|别忘了)/,''),time:null,repeat:'once'});addMsg('已记下提醒：'+v,'bot','工具: reminder_add ✓');renderSchedule();return;}
+    if(/记一下|待办/.test(v)){addMsg('已记下待办：'+v,'bot','工具: todo_add ✓');return;}
+    if(/几点|时间|日期/.test(v)){addMsg('现在是 '+new Date().toLocaleString('zh-CN'),'bot','工具: current_time ✓');return;}
+    if(/天气/.test(v)){var c=v.match(/([\u4e00-\u9fa5]{2,})天气/);addMsg((c?c[1]:'你所在城市')+' 今天晴，18℃～26℃（演示数据）','bot','工具: weather ✓');return;}
+    if(/课表|什么课|明天.*课/.test(v)){addMsg('明天课程：上午 软件工程（3-4 节），下午 数据结构（7-8 节）。','bot','工具: schedule_query ✓');return;}
+    if(/算|计算/.test(v)){var r=calc(v);addMsg(r===null?'这个算式我算不了，请确认只含数字和 + - * / ( )':'结果：'+r,'bot',r===null?'工具: calculator ✗':'工具: calculator ✓');return;}
+    addMsg('我暂时没听懂，你可以试试："提醒我周五交作业" "现在几点" "帮我算一下 (3+5)*2"。','bot');
+  },300);
 }
-adminBody('rem');
+var repeatType='once';
+function openForm(){document.getElementById('formOverlay').classList.add('on');}
+function closeForm(){document.getElementById('formOverlay').classList.remove('on');}
+function setRepeat(el,t){repeatType=t;document.querySelectorAll('#repeat-group label').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById('interval-label').style.display=t==='interval'?'block':'none';document.getElementById('r-interval').style.display=t==='interval'?'block':'none';}
+function addReminder(r){store.reminders.unshift(r);save();}
+function saveReminder(){
+  var c=document.getElementById('r-content').value.trim();if(!c){alert('内容不能为空');return;}
+  var t=document.getElementById('r-time').value;
+  var r={content:c,time:t||'现在',repeat:repeatType,done:false};
+  if(repeatType==='interval')r.interval=document.getElementById('r-interval').value||'45';
+  addReminder(r);closeForm();renderSchedule();toast(true,c);
+}
+function renderSchedule(){
+  var b=document.getElementById('schedule-list');b.innerHTML='';
+  if(!store.reminders.length)b.innerHTML='<div style="color:var(--gray);font-size:13px">还没有提醒，点右上角"＋新增提醒"。</div>';
+  store.reminders.forEach(function(r,i){
+    var tag=r.repeat==='once'?'<span class="tag orange">一次性</span>':(r.repeat==='daily'?'<span class="tag teal">每天</span>':'<span class="tag teal">间隔 '+r.interval+' 分钟</span>');
+    var d=document.createElement('div');d.className='list-item'+(r.done?' done':'');
+    d.innerHTML='<div class="grow"><div class="t">'+r.content+'</div><div class="s">'+r.time+' · '+tag+'</div></div>'+
+      '<button class="mini" onclick="done('+i+')">'+(r.done?'撤销':'完成')+'</button>'+
+      '<button class="mini danger" onclick="del('+i+')">删除</button>';
+    b.appendChild(d);
+  });
+}
+function done(i){store.reminders[i].done=!store.reminders[i].done;save();renderSchedule();}
+function del(i){store.reminders.splice(i,1);save();renderSchedule();}
+function toast(show,c){document.getElementById('toast').classList.toggle('on',show);if(c)document.getElementById('toast-text').textContent=c+'，时间到了';}
+function renderMem(){var b=document.getElementById('mem-list');b.innerHTML='';
+  Object.keys(store.facts).filter(k=>store.facts[k]).forEach(function(k){
+    var d=document.createElement('div');d.className='list-item';
+    d.innerHTML='<div class="grow"><div class="t">'+k+'</div><div class="s">'+store.facts[k]+'</div></div><button class="mini danger" onclick="delFact(\''+k+'\')">删除</button>';
+    b.appendChild(d);});
+  if(!b.innerHTML)b.innerHTML='<div style="color:var(--gray);font-size:13px">暂无长期记忆，在对话中说"我叫XX"即可建立。</div>';
+}
+function delFact(k){delete store.facts[k];if(k==='name')store.name='';save();renderMem();}
+function saveSettings(){store.tone=document.getElementById('voice-tone').value;save();alert('设置已保存');}
+var TT=[["周一","高等数学","数据结构"],["周二","大学英语","体育"],["周三","软件工程",""],["周四","数据库","操作系统"],["周五","软件工程",""]];
+function renderTT(){var b=document.getElementById('tt');var h='<table style="width:100%;border-collapse:collapse;font-size:13px"><tr><th style="background:var(--cream);color:var(--brown);padding:8px">星期</th><th style="background:var(--cream);color:var(--brown)">1-2 节</th><th style="background:var(--cream);color:var(--brown)">3-4 节</th></tr>';
+  TT.forEach(function(r){h+='<tr><td style="padding:8px;border-bottom:1px solid #f0e6de">'+r[0]+'</td><td style="padding:8px;border-bottom:1px solid #f0e6de">'+(r[1]||'—')+'</td><td style="padding:8px;border-bottom:1px solid #f0e6de">'+(r[2]||'—')+'</td></tr>';});
+  b.innerHTML=h+'</table>';}
+document.getElementById('voice-tone').value=store.tone;
+renderSchedule();renderMem();renderTT();
 </script>
 </body>
 </html>
