@@ -13,7 +13,9 @@
 
 ## 原型在线预览
 
-双击 `prototype/index.html` 在浏览器中打开即可交互；如需在线链接，可在仓库 Settings → Pages 开启 GitHub Pages，将站点根目录设为 `DeskBirdDesign/prototype`。
+墨刀在线链接：https://pb-zfpext4dnyqvdj6stla5kzujahh2ywhqk36zmji.ai.modao.ink/index.html
+
+本地备份：双击 `prototype/index.html` 在浏览器中打开即可交互。
 
 ## 团队
 
